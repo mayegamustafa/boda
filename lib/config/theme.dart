@@ -10,7 +10,7 @@ class AppTheme {
     scaffoldBackgroundColor: AppColor.greyBackgroundColor,
     canvasColor: AppColor.whiteColor,
     brightness: Brightness.light,
-    dialogTheme: const DialogTheme(
+    dialogTheme: const DialogThemeData(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
     ),
@@ -25,7 +25,7 @@ class AppTheme {
         color: Colors.black,
       ),
     ),
-    drawerTheme: DrawerThemeData(scrimColor: Colors.black.withOpacity(0.7)),
+    drawerTheme: DrawerThemeData(scrimColor: Colors.black.withValues(alpha: 0.7)),
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -34,14 +34,14 @@ class AppTheme {
     scaffoldBackgroundColor: Colors.black,
     canvasColor: Colors.black,
     brightness: Brightness.dark,
-    dialogTheme: const DialogTheme(
+    dialogTheme: const DialogThemeData(
       backgroundColor: Colors.black,
       surfaceTintColor: Colors.transparent,
     ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: Colors.black,
       surfaceTintColor: Colors.transparent,
-      modalBarrierColor: Colors.white.withOpacity(0.5),
+      modalBarrierColor: Colors.white.withValues(alpha: 0.5),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.black,
@@ -51,10 +51,10 @@ class AppTheme {
       ),
     ),
     dividerTheme: DividerThemeData(
-      color: AppColor.borderColor.withOpacity(0.8),
+      color: AppColor.borderColor.withValues(alpha: 0.8),
       thickness: 0.5,
     ),
-    drawerTheme: DrawerThemeData(scrimColor: Colors.grey.withOpacity(0.3)),
+    drawerTheme: DrawerThemeData(scrimColor: Colors.grey.withValues(alpha: 0.3)),
   );
 
   static InputDecoration inputDecoration = InputDecoration(
