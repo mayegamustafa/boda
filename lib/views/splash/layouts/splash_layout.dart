@@ -28,12 +28,24 @@ class _SplashLayoutState extends ConsumerState<SplashLayout> {
   void initState() {
     authBox = Hive.box(AppConstants.authBox);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      ref.read(masterDataProvider);
+      try {
+        ref.read(masterDataProvider);
+      } catch (e) {
+        // Handle master data fetch error silently
+        print('Master data fetch failed: $e');
+      }
     });
 
     Future.microtask(() {
-      ref.read(checkUserStatusProvider(
-          authBox.get(AppConstants.isInReview, defaultValue: "")));
+      try {
+        final reviewStatus = authBox.get(AppConstants.isInReview, defaultValue: "");
+        if (reviewStatus.isNotEmpty) {
+          ref.read(checkUserStatusProvider(reviewStatus));
+        }
+      } catch (e) {
+        // Handle user status check error silently
+        print('User status check failed: $e');
+      }
     });
 
     Future.delayed(const Duration(seconds: 4), () async {

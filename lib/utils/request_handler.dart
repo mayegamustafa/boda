@@ -63,6 +63,10 @@ void addApiInterceptors(Dio dio) {
         handler.next(response);
       },
       onError: (error, handler) {
+        // Only show error messages for non-background API calls
+        final url = error.requestOptions.path;
+        final isBackgroundCall = url.contains('/master') || url.contains('/check-user-status');
+        
         switch (error.type) {
           case DioExceptionType.connectionError:
           case DioExceptionType.connectionTimeout:
@@ -70,10 +74,12 @@ void addApiInterceptors(Dio dio) {
           case DioExceptionType.sendTimeout:
           case DioExceptionType.receiveTimeout:
           case DioExceptionType.unknown:
-            GlobalFunction.showCustomSnackbar(
-              message: 'An unknown error occurred',
-              isSuccess: false,
-            );
+            if (!isBackgroundCall) {
+              GlobalFunction.showCustomSnackbar(
+                message: 'An unknown error occurred',
+                isSuccess: false,
+              );
+            }
             break;
           default:
             break;

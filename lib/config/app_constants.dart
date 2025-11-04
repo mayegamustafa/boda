@@ -1,6 +1,6 @@
 class AppConstants {
   // Codecanyon
-  static const String baseUrl = 'https://totalhealthherbalist.com//api';
+  static const String baseUrl = 'https://totalhealthherbalist.com/api';
   // QA Testing
   // static const String baseUrl = 'https://uat.readyecommerce.app/api';
   // Development
@@ -27,7 +27,7 @@ class AppConstants {
   static const String notification = '$baseUrl/rider/notifications';
   static const String profileUpdate = '$baseUrl/rider/profile-update';
 
-  static String checkPhoneAndEmail = '$baseUrl/seller/check-email-phone';
+  static String checkPhoneAndEmail = '$baseUrl/rider/check-email-phone';
 
   // Hive Box
   static const String appSettingsBox = 'appSettings';

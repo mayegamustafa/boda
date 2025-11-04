@@ -94,9 +94,9 @@ class AuthService implements AuthRepo {
   @override
   Future<Response> checkPhoneAndEmail(
       {required String email, required String phone}) async {
-    final response = await ref.read(apiClientProvider).post(
+    final response = await ref.read(apiClientProvider).get(
         AppConstants.checkPhoneAndEmail,
-        data: {'email': email, 'phone': phone});
+        query: {'email': email, 'phone': phone});
     return response;
   }
 
