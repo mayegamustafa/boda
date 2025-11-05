@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:razinshop_rider/config/app_constants.dart';
 import 'package:razinshop_rider/routers.dart';
+import 'package:razinshop_rider/services/telemetry_service.dart';
 import 'package:razinshop_rider/utils/global_function.dart';
 
 void addApiInterceptors(Dio dio) {
@@ -78,7 +79,7 @@ void addApiInterceptors(Dio dio) {
         }
         handler.next(response);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         // Only show error messages for non-background API calls
         final url = error.requestOptions.path;
         final isBackgroundCall = url.contains('/master') || url.contains('/check-user-status');
@@ -86,6 +87,17 @@ void addApiInterceptors(Dio dio) {
         print('API Error: ${error.type} - ${error.message}');
         print('Request URL: ${error.requestOptions.uri}');
         print('Error Response: ${error.response?.data}');
+        
+        // Log to telemetry
+        await TelemetryService().logNetworkError(
+          endpoint: error.requestOptions.path,
+          statusCode: error.response?.statusCode ?? 0,
+          error: error.message ?? 'Unknown error',
+          requestMethod: error.requestOptions.method,
+          requestBody: error.requestOptions.data?.toString(),
+          responseBody: error.response?.data?.toString(),
+          duration: Duration(milliseconds: error.requestOptions.receiveTimeout?.inMilliseconds ?? 0),
+        );
         
         String errorMessage = 'Network error occurred';
         

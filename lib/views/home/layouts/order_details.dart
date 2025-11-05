@@ -20,6 +20,8 @@ import 'package:razinshop_rider/generated/l10n.dart';
 import 'package:razinshop_rider/models/order_details_model/order_details_model.dart';
 import 'package:razinshop_rider/utils/extensions.dart';
 import 'package:razinshop_rider/utils/global_function.dart';
+import 'package:razinshop_rider/components/enhanced_slide_button.dart';
+import 'package:razinshop_rider/services/telemetry_service.dart';
 import 'package:razinshop_rider/views/home/components/cash_collect_dialog.dart';
 import 'package:razinshop_rider/views/home/components/google_map.dart';
 
