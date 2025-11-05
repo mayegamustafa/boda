@@ -13,6 +13,7 @@ import 'package:razinshop_rider/utils/context_less_navigate.dart';
 import 'package:razinshop_rider/utils/extensions.dart';
 import 'package:razinshop_rider/utils/global_function.dart';
 import 'package:razinshop_rider/views/auth/login_view.dart';
+import 'package:razinshop_rider/components/permission_request_dialog.dart';
 
 class SplashLayout extends ConsumerStatefulWidget {
   const SplashLayout({super.key});
@@ -52,34 +53,53 @@ class _SplashLayoutState extends ConsumerState<SplashLayout> {
       final String? checkStatus =
           authBox.get(AppConstants.isInReview, defaultValue: null);
 
-      if (checkStatus == null) {
-        if (authBox.get(AppConstants.authToken) != null) {
-          ref.read(userDetilsProvider);
-          context.nav.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+      // Check if permissions have been requested before
+      final bool hasRequestedPermissions = 
+          authBox.get('has_requested_permissions', defaultValue: false);
+
+      void navigateToNextScreen() {
+        if (checkStatus == null) {
+          if (authBox.get(AppConstants.authToken) != null) {
+            ref.read(userDetilsProvider);
+            context.nav.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+          } else {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    LoginView(),
+                transitionDuration: const Duration(milliseconds: 600),
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  var offsetAnimation = animation
+                      .drive(Tween(begin: Offset(0.0, 1.0), end: Offset.zero));
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  );
+                },
+              ),
+            );
+          }
         } else {
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  LoginView(),
-              transitionDuration: const Duration(milliseconds: 600),
-              barrierColor: Colors.black.withOpacity(0.5),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                var offsetAnimation = animation
-                    .drive(Tween(begin: Offset(0.0, 1.0), end: Offset.zero));
-                return SlideTransition(
-                  position: offsetAnimation,
-                  child: child,
-                );
-              },
-            ),
-          );
+          context.nav.pushNamedAndRemoveUntil(Routes.review, (route) => false,
+              arguments:
+                  authBox.get(AppConstants.isInReview, defaultValue: null));
         }
+      }
+
+      // Show permission dialog only on first app launch
+      if (!hasRequestedPermissions && mounted) {
+        showPermissionDialog(
+          context,
+          onComplete: () {
+            authBox.put('has_requested_permissions', true);
+            navigateToNextScreen();
+          },
+        );
       } else {
-        context.nav.pushNamedAndRemoveUntil(Routes.review, (route) => false,
-            arguments:
-                authBox.get(AppConstants.isInReview, defaultValue: null));
+        navigateToNextScreen();
       }
     });
     super.initState();

@@ -109,28 +109,35 @@ class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
     
     Set<Marker> newMarkers = {};
     
-    // Add destination marker if coordinates provided
+    print('Updating markers - Current location: $currentLocation');
+    print('Show current location: ${widget.showCurrentLocation}');
+    
+    // Add current location marker FIRST and prominently if enabled and available
+    if (widget.showCurrentLocation && currentLocation != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('currentLocation'),
+          position: LatLng(currentLocation.latitude, currentLocation.longitude),
+          icon: _riderMarker ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          anchor: const Offset(0.5, 0.5),
+          infoWindow: InfoWindow(
+            title: 'Your Current Location',
+            snippet: 'Lat: ${currentLocation.latitude.toStringAsFixed(4)}, Lng: ${currentLocation.longitude.toStringAsFixed(4)}',
+          ),
+        ),
+      );
+      print('Added current location marker at: ${currentLocation.latitude}, ${currentLocation.longitude}');
+    }
+    
+    // Add destination marker if coordinates provided (but make it secondary)
     if (widget.latitude != null && widget.longitude != null) {
       newMarkers.add(
         Marker(
           markerId: const MarkerId('destination'),
           position: LatLng(widget.latitude!, widget.longitude!),
-          icon: _destinationMarker ?? BitmapDescriptor.defaultMarker,
+          icon: _destinationMarker ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           anchor: const Offset(0.5, 1),
           infoWindow: const InfoWindow(title: 'Destination'),
-        ),
-      );
-    }
-    
-    // Add current location marker if enabled
-    if (widget.showCurrentLocation && currentLocation != null && _riderMarker != null) {
-      newMarkers.add(
-        Marker(
-          markerId: const MarkerId('currentLocation'),
-          position: LatLng(currentLocation.latitude, currentLocation.longitude),
-          icon: _riderMarker!,
-          anchor: const Offset(0.5, 0.5),
-          infoWindow: const InfoWindow(title: 'Your Location'),
         ),
       );
     }
@@ -172,6 +179,21 @@ class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
     if (markers.isEmpty) return;
     
     final controller = await _controller.future;
+    final currentLocation = ref.read(currentLocationProvider);
+    
+    // If we have current location, prioritize it
+    if (widget.showCurrentLocation && currentLocation != null) {
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(currentLocation.latitude, currentLocation.longitude),
+            zoom: 17.0, // Higher zoom for current location
+          ),
+        ),
+      );
+      print('Centered camera on current location: ${currentLocation.latitude}, ${currentLocation.longitude}');
+      return;
+    }
     
     if (markers.length == 1) {
       // If only one marker, center on it
@@ -255,6 +277,7 @@ class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
         Consumer(
           builder: (context, ref, child) {
             final hasPermission = ref.watch(locationPermissionProvider);
+            final currentLocation = ref.watch(currentLocationProvider);
             
             if (!hasPermission && widget.showCurrentLocation) {
               return Positioned(
@@ -262,31 +285,99 @@ class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
                 left: 20,
                 right: 20,
                 child: Card(
+                  elevation: 8,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Icon(Icons.location_on, size: 48, color: Colors.blue),
+                        const SizedBox(height: 8),
                         const Text(
-                          'Location Permission Required',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          'Enable Location Access',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'To show your current location on the map, please grant location permission.',
+                          'Allow location access to show your real-time position on the map and track deliveries.',
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () async {
-                            final granted = await ref
-                                .read(locationPermissionProvider.notifier)
-                                .requestPermission();
-                            if (granted) {
-                              // Trigger location update
-                              ref.read(currentLocationProvider.notifier).updateLocation();
-                            }
-                          },
-                          child: const Text('Grant Permission'),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  // Hide the overlay but don't request permission
+                                  ref.read(locationPermissionProvider.notifier).state = true;
+                                },
+                                child: const Text('Skip'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  print('Permission button pressed');
+                                  final granted = await ref
+                                      .read(locationPermissionProvider.notifier)
+                                      .requestPermission();
+                                  print('Permission granted: $granted');
+                                  if (granted) {
+                                    // Trigger location update
+                                    await ref.read(currentLocationProvider.notifier).updateLocation();
+                                    print('Location update triggered');
+                                  } else {
+                                    // Show error message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Location permission denied. You can enable it in Settings.'),
+                                        action: SnackBarAction(
+                                          label: 'Settings',
+                                          onPressed: openAppSettings,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text('Allow Location'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            } else if (widget.showCurrentLocation && currentLocation == null) {
+              // Show loading state when permission granted but no location yet
+              return Positioned(
+                top: 20,
+                left: 20,
+                right: 20,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        CircularProgressIndicator(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Getting your location...'),
+                              Text(
+                                'Make sure GPS is enabled',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

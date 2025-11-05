@@ -14,6 +14,7 @@ import 'package:razinshop_rider/views/home/layouts/home_layout.dart';
 import 'package:razinshop_rider/views/home/layouts/order_details.dart';
 import 'package:razinshop_rider/views/home/layouts/order_history.dart';
 import 'package:razinshop_rider/views/splash/splash_view.dart';
+import 'package:razinshop_rider/views/debug/location_debug_screen.dart';
 
 class Routes {
   Routes._();
@@ -31,6 +32,7 @@ class Routes {
   static const notification = '/notification';
   static const privayPolicay = '/privacy-policy';
   static const termsAndCondition = '/terms-and-condition';
+  static const debugLocation = '/debug-location';
 }
 
 Route generatedRoutes(RouteSettings settings) {
@@ -98,6 +100,10 @@ Route generatedRoutes(RouteSettings settings) {
 
     case Routes.notification:
       child = NotificationScreen();
+      break;
+
+    case Routes.debugLocation:
+      child = const LocationDebugScreen();
       break;
 
     default:

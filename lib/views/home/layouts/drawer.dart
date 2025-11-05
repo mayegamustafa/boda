@@ -300,6 +300,20 @@ class _OthersSectionState extends ConsumerState<_OthersSection> {
           onTap: () {},
         ),
         Divider(indent: 16.r, endIndent: 16.r, color: AppColor.borderColor),
+        // Debug Location (Temporary)
+        ListTile(
+          leading: Icon(
+            Icons.bug_report,
+            color: AppColor.primaryColor,
+          ),
+          title: Text('Debug Location'),
+          trailing: SvgPicture.asset(Assets.svgs.arrowRight),
+          onTap: () {
+            context.nav.pop();
+            context.nav.pushNamed(Routes.debugLocation);
+          },
+        ),
+        Divider(indent: 16.r, endIndent: 16.r, color: AppColor.borderColor),
       ],
     );
   }

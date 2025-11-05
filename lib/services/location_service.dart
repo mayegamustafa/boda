@@ -39,29 +39,57 @@ class LocationService {
 
   /// Request location permissions
   Future<bool> requestLocationPermission() async {
-    // Check if location services are enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled, request user to enable it
-      await Geolocator.openLocationSettings();
-      return false;
-    }
+    try {
+      // First check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Try to open location settings
+        bool opened = await Geolocator.openLocationSettings();
+        if (!opened) {
+          print('Could not open location settings');
+          return false;
+        }
+        // Check again after user potentially enables location
+        serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          return false;
+        }
+      }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
+      print('Current location permission: $permission');
+      
       if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        print('Permission after request: $permission');
+        
+        if (permission == LocationPermission.denied) {
+          print('Location permission denied by user');
+          return false;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        print('Location permission denied forever, opening app settings');
+        // Use permission_handler to open app settings
+        await Permission.location.request();
+        if (await Permission.location.isPermanentlyDenied) {
+          await openAppSettings();
+        }
         return false;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately
-      await openAppSettings();
+      if (permission == LocationPermission.whileInUse || 
+          permission == LocationPermission.always) {
+        print('Location permission granted: $permission');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print('Error requesting location permission: $e');
       return false;
     }
-
-    return true;
   }
 
   /// Get current position
@@ -69,21 +97,42 @@ class LocationService {
     try {
       bool hasPermission = await isLocationEnabled();
       if (!hasPermission) {
+        print('Location not enabled, requesting permission...');
         hasPermission = await requestLocationPermission();
         if (!hasPermission) {
+          print('Permission denied, cannot get location');
           return null;
         }
       }
 
+      print('Getting current position...');
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        timeLimit: const Duration(seconds: 15),
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Location request timed out');
+        },
       );
 
+      print('Got position: ${position.latitude}, ${position.longitude}');
       return position;
     } catch (e) {
       print('Error getting location: $e');
-      return null;
+      // Try with lower accuracy as fallback
+      try {
+        print('Trying with medium accuracy...');
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 10),
+        );
+        print('Got fallback position: ${position.latitude}, ${position.longitude}');
+        return position;
+      } catch (e2) {
+        print('Fallback also failed: $e2');
+        return null;
+      }
     }
   }
 

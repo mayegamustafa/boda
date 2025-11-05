@@ -39,7 +39,7 @@ final locationPermissionProvider =
 );
 
 typedef _$LocationPermission = AutoDisposeNotifier<bool>;
-String _$deliveryTrackingHash() => r'2c5470d8e3ea14dce3c5bb3a4db347df38634c16';
+String _$deliveryTrackingHash() => r'4e4e830455225aa229afafa80cedb0cbf02ee739';
 
 /// Provider for tracking delivery status
 ///
