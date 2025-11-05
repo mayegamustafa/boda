@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
             // Initialize Firebase Messaging Service (if available)
             WidgetsBinding.instance.addPostFrameCallback((_) {
               try {
-                FirebaseMessagingService.instance.initializeFirebaseMessaging(ref);
+                FirebaseMessagingService(ref).initialize();
               } catch (e) {
                 print('Firebase messaging not available - using polling notifications only');
               }
@@ -76,8 +76,8 @@ class MyApp extends StatelessWidget {
             return MaterialApp.router(
               debugShowCheckedModeBanner: false,
               title: 'RazinShop Rider',
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
               themeMode: ref.watch(themeProvider),
               locale: languageNotifier.getCurrentLocal,
               localizationsDelegates: const [

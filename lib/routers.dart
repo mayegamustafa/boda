@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:razinshop_rider/views/auth/layouts/confirm_otp_layout.dart';
 import 'package:razinshop_rider/views/auth/layouts/create_password_layout.dart';
@@ -119,3 +120,36 @@ Route generatedRoutes(RouteSettings settings) {
     reverseDuration: const Duration(milliseconds: 300),
   );
 }
+
+// GoRouter configuration for MaterialApp.router
+final GoRouter router = GoRouter(
+  routes: [
+    GoRoute(
+      path: Routes.splash,
+      builder: (context, state) => const SplashView(),
+    ),
+    GoRoute(
+      path: Routes.login,
+      builder: (context, state) => const LoginView(),
+    ),
+    GoRoute(
+      path: Routes.home,
+      builder: (context, state) => const HomeLayout(),
+    ),
+    GoRoute(
+      path: Routes.orderDetails,
+      builder: (context, state) {
+        final orderID = int.tryParse(state.uri.queryParameters['orderID'] ?? '0') ?? 0;
+        return OrderDetailsView(orderID: orderID);
+      },
+    ),
+    GoRoute(
+      path: Routes.orderHistory,
+      builder: (context, state) => OrderHistory(),
+    ),
+    GoRoute(
+      path: Routes.debugLocation,
+      builder: (context, state) => const LocationDebugScreen(),
+    ),
+  ],
+);

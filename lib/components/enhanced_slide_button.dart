@@ -45,7 +45,7 @@ class EnhancedSlideButton extends ConsumerStatefulWidget {
   final Duration animationDuration;
 
   const EnhancedSlideButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onSlideComplete,
     this.loadingText,
@@ -61,7 +61,6 @@ class EnhancedSlideButton extends ConsumerStatefulWidget {
     this.hapticFeedback = true,
     this.maxRetries = 3,
     this.animationDuration = const Duration(milliseconds: 300),
-    super.key,
   });
 
   @override
