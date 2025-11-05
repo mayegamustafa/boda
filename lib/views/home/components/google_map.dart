@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:razinshop_rider/utils/extensions.dart';
 import 'package:razinshop_rider/controllers/location_controller/location_controller.dart';
 

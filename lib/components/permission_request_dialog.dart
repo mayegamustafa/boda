@@ -51,11 +51,9 @@ class PermissionRequestDialog extends ConsumerWidget {
                       .read(locationPermissionProvider.notifier)
                       .requestPermission();
                   if (granted) {
-                    onPressed: () async {
-                    await ref.read(appPermissionsProvider.notifier).requestAllPermissions();
-                  },
                     ref.read(currentLocationProvider.notifier).updateLocation();
                   }
+                  await ref.read(appPermissionsProvider.notifier).requestAllPermissions();
                 },
               ),
               const SizedBox(height: 12),
