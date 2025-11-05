@@ -41,9 +41,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       ),
       body: Column(
         children: [
-          context.isDark
-              ? Assets.pngs.riderAppDark.image(width: 200.w)
-              : Assets.pngs.riderApp.image(width: 200.w),
+          Assets.pngs.delivery.image(width: 200.w),
           Gap(65.h),
           FormBuilder(
             key: _formKey,

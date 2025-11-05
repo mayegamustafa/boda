@@ -221,9 +221,7 @@ class _LogoSection extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        context.isDark
-            ? Assets.pngs.riderAppDark.image(width: 200.w)
-            : Assets.pngs.riderApp.image(width: 200.w),
+        Assets.pngs.delivery.image(width: 200.w),
       ],
     );
   }

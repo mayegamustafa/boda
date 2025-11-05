@@ -125,17 +125,64 @@ class Registration extends _$Registration {
     return false;
   }
 
-  Future<bool> registration({required Map<String, dynamic> data}) async {
-    state = true;
-    final response = await ref
-        .read(authServiceProvider)
-        .registration(data: data);
-    if (response.statusCode == 200) {
+  Future<Map<String, dynamic>> registration({required Map<String, dynamic> data}) async {
+    try {
+      state = true;
+      print('Registration Data: $data');
+      
+      final response = await ref
+          .read(authServiceProvider)
+          .registration(data: data);
+          
+      print('Registration Response Status: ${response.statusCode}');
+      print('Registration Response Data: ${response.data}');
+      
       state = false;
-      return true;
-    } else {
+      
+      if (response.statusCode == 200) {
+        return {
+          'status': true,
+          'message': 'Registration successful',
+          'data': response.data,
+        };
+      } else {
+        String errorMessage = 'Registration failed';
+        if (response.data != null) {
+          if (response.data is Map && response.data.containsKey('message')) {
+            errorMessage = response.data['message'].toString();
+          } else if (response.data is String) {
+            errorMessage = response.data;
+          }
+        }
+        return {
+          'status': false,
+          'message': errorMessage,
+        };
+      }
+    } catch (e) {
       state = false;
-      return false;
+      print('Registration Error: $e');
+      
+      String errorMessage = 'Network error occurred';
+      if (e is DioException) {
+        if (e.response?.data != null) {
+          try {
+            final responseData = e.response!.data;
+            if (responseData is Map && responseData.containsKey('message')) {
+              errorMessage = responseData['message'].toString();
+            } else if (responseData is String) {
+              errorMessage = responseData;
+            }
+          } catch (_) {
+            errorMessage = 'Server error occurred';
+          }
+        }
+      }
+      
+      return {
+        'status': false,
+        'message': errorMessage,
+      };
     }
   }
 }

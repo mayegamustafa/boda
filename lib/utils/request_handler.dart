@@ -67,25 +67,59 @@ void addApiInterceptors(Dio dio) {
         final url = error.requestOptions.path;
         final isBackgroundCall = url.contains('/master') || url.contains('/check-user-status');
         
+        print('API Error: ${error.type} - ${error.message}');
+        print('Request URL: ${error.requestOptions.uri}');
+        print('Error Response: ${error.response?.data}');
+        
+        String errorMessage = 'Network error occurred';
+        
         switch (error.type) {
           case DioExceptionType.connectionError:
+            errorMessage = 'Connection error. Please check your internet connection.';
+            break;
           case DioExceptionType.connectionTimeout:
-          case DioExceptionType.badResponse:
-          case DioExceptionType.sendTimeout:
+            errorMessage = 'Connection timeout. Please try again.';
+            break;
           case DioExceptionType.receiveTimeout:
-          case DioExceptionType.unknown:
-            if (!isBackgroundCall) {
-              GlobalFunction.showCustomSnackbar(
-                message: 'An unknown error occurred',
-                isSuccess: false,
-              );
+            errorMessage = 'Server response timeout. Please try again.';
+            break;
+          case DioExceptionType.sendTimeout:
+            errorMessage = 'Request timeout. Please try again.';
+            break;
+          case DioExceptionType.badResponse:
+            if (error.response?.data != null) {
+              try {
+                final responseData = error.response!.data;
+                if (responseData is Map && responseData.containsKey('message')) {
+                  errorMessage = responseData['message'].toString();
+                } else if (responseData is String) {
+                  errorMessage = responseData;
+                } else {
+                  errorMessage = 'Server error occurred';
+                }
+              } catch (e) {
+                errorMessage = 'Server error occurred';
+              }
+            } else {
+              errorMessage = 'Server error occurred';
             }
             break;
+          case DioExceptionType.unknown:
+            errorMessage = 'Unknown error occurred. Please try again.';
+            break;
           default:
+            errorMessage = 'Network error occurred';
             break;
         }
+        
+        if (!isBackgroundCall) {
+          GlobalFunction.showCustomSnackbar(
+            message: errorMessage,
+            isSuccess: false,
+          );
+        }
+        
         if (error.response != null) {
-          final message = error.response!.data['message'];
           final statusCode = error.response!.statusCode;
           switch (statusCode) {
             case 401:
@@ -94,24 +128,7 @@ void addApiInterceptors(Dio dio) {
               GlobalFunction.navigatorKey.currentState
                   ?.pushNamedAndRemoveUntil(Routes.login, (route) => false);
               break;
-
-            case 400:
-              GlobalFunction.showCustomSnackbar(
-                message: message,
-                isSuccess: false,
-              );
-              break;
-            case 403:
-              GlobalFunction.showCustomSnackbar(
-                message: message,
-                isSuccess: false,
-              );
-              break;
             default:
-              GlobalFunction.showCustomSnackbar(
-                message: 'unexpected error',
-                isSuccess: false,
-              );
               break;
           }
         }

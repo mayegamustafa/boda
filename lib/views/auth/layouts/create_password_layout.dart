@@ -13,6 +13,7 @@ import 'package:razinshop_rider/controllers/auth_controller/auth_controller.dart
 import 'package:razinshop_rider/generated/l10n.dart';
 import 'package:razinshop_rider/routers.dart';
 import 'package:razinshop_rider/utils/context_less_navigate.dart';
+import 'package:razinshop_rider/utils/global_function.dart';
 import 'package:razinshop_rider/views/auth/layouts/confirm_otp_layout.dart';
 
 class CreatePasswordLayout extends ConsumerStatefulWidget {
@@ -161,12 +162,21 @@ class _CreatePasswordLayoutState extends ConsumerState<CreatePasswordLayout> {
                                         ref
                                             .read(registrationProvider.notifier)
                                             .registration(data: formData)
-                                            .then((value) {
-                                          if (value == true) {
+                                            .then((response) {
+                                          if (response['status'] == true) {
+                                            GlobalFunction.showCustomSnackbar(
+                                              message: response['message'] ?? 'Registration successful',
+                                              isSuccess: true,
+                                            );
                                             context.nav.pushNamed(
                                               Routes.review,
                                               arguments: widget
                                                   .userData.userData['phone'],
+                                            );
+                                          } else {
+                                            GlobalFunction.showCustomSnackbar(
+                                              message: response['message'] ?? 'Registration failed',
+                                              isSuccess: false,
                                             );
                                           }
                                         });

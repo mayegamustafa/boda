@@ -307,10 +307,10 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                                     hintText: S.of(context).selectVehicleType,
                                   ),
                                   icon: SvgPicture.asset(Assets.svgs.downArrow),
-                                  items: ["bike1", "car", "truck"]
+                                  items: ["bodaboda", "taxi", "lorry", "pickup", "motorcycle"]
                                       .map((e) => DropdownMenuItem(
                                             value: e,
-                                            child: Text(e),
+                                            child: Text(e.toUpperCase()),
                                           ))
                                       .toList(),
                                   validator: FormBuilderValidators.compose([
