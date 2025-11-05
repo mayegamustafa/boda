@@ -343,8 +343,14 @@ class _ShippingInfo extends ConsumerWidget {
     String googleMapsUrl;
     String appleMapUrl;
     
-    // For now, use address-based search since coordinates aren't in Address model
-    if (userAddress?.addressLine != null && userAddress!.addressLine!.isNotEmpty) {
+    // Try to use customer coordinates first (from address latitude/longitude)
+    if (userAddress?.latitude != null && userAddress?.longitude != null && 
+        userAddress!.latitude!.isNotEmpty && userAddress.longitude!.isNotEmpty) {
+      final customerLat = double.tryParse(userAddress.latitude!) ?? 23.7686089;
+      final customerLng = double.tryParse(userAddress.longitude!) ?? 90.3547867;
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$customerLat,$customerLng';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$customerLat,$customerLng';
+    } else if (userAddress?.addressLine != null && userAddress!.addressLine!.isNotEmpty) {
       // Use address text for directions
       final addressText = Uri.encodeComponent('${userAddress.addressLine}, ${userAddress.area ?? ''}, ${userAddress.postCode ?? ''}');
       googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$addressText';
@@ -942,8 +948,12 @@ class _ShippingInfo extends ConsumerWidget {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: GoogleMapView(
-                                      latitude: 23.7686089, // TODO: Add latitude/longitude to Address model and use real coordinates
-                                      longitude: 90.3547867, // For now using default coordinates
+                                      latitude: orderDetailsModel.data?.order?.user?.address?.latitude != null 
+                                          ? double.tryParse(orderDetailsModel.data!.order!.user!.address!.latitude!) ?? 23.7686089 
+                                          : 23.7686089,
+                                      longitude: orderDetailsModel.data?.order?.user?.address?.longitude != null 
+                                          ? double.tryParse(orderDetailsModel.data!.order!.user!.address!.longitude!) ?? 90.3547867 
+                                          : 90.3547867,
                                       pinIcon: Assets.pngs.userPinIcon.keyName,
                                       showCurrentLocation: true,
                                       trackDelivery: true,

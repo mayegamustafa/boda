@@ -11,6 +11,8 @@ class Address {
   String? addressLine2;
   String? postCode;
   bool? isDefault;
+  String? latitude;
+  String? longitude;
 
   Address({
     this.id,
@@ -23,6 +25,8 @@ class Address {
     this.addressLine2,
     this.postCode,
     this.isDefault,
+    this.latitude,
+    this.longitude,
   });
 
   factory Address.fromMap(Map<String, dynamic> data) => Address(
@@ -36,6 +40,8 @@ class Address {
         addressLine2: data['address_line2'] as String?,
         postCode: data['post_code'] as String?,
         isDefault: data['is_default'] as bool?,
+        latitude: data['latitude'] as String?,
+        longitude: data['longitude'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -49,6 +55,8 @@ class Address {
         'address_line2': addressLine2,
         'post_code': postCode,
         'is_default': isDefault,
+        'latitude': latitude,
+        'longitude': longitude,
       };
 
   /// `dart:convert`

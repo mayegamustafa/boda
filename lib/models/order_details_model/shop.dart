@@ -5,14 +5,25 @@ class Shop {
   String? logo;
   String? phone;
   String? address;
+  String? latitude;
+  String? longitude;
 
-  Shop({this.name, this.logo, this.phone, this.address});
+  Shop({
+    this.name, 
+    this.logo, 
+    this.phone, 
+    this.address,
+    this.latitude,
+    this.longitude,
+  });
 
   factory Shop.fromMap(Map<String, dynamic> data) => Shop(
         name: data['name'] as String?,
         logo: data['logo'] as String?,
         phone: data['phone'] as String?,
         address: data['address'] as String?,
+        latitude: data['latitude'] as String?,
+        longitude: data['longitude'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -20,6 +31,8 @@ class Shop {
         'logo': logo,
         'phone': phone,
         'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
       };
 
   /// `dart:convert`
