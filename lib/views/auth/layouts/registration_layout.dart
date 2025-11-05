@@ -27,7 +27,6 @@ import 'package:razinshop_rider/utils/extensions.dart';
 
 import '../../../routers.dart';
 import '../../../utils/global_function.dart';
-import 'confirm_otp_layout.dart';
 
 class RegistrationLayout extends ConsumerStatefulWidget {
   const RegistrationLayout({super.key, this.isProfileUpdate = false});
@@ -317,6 +316,42 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                                     FormBuilderValidators.required(),
                                   ]),
                                 ),
+                                Gap(20.r),
+                                // password
+                                headerText(title: S.of(context).password),
+                                Gap(10.r),
+                                FormBuilderTextField(
+                                  name: 'password',
+                                  obscureText: true,
+                                  decoration: AppTheme.inputDecoration.copyWith(
+                                    hintText: S.of(context).enterPassword,
+                                  ),
+                                  validator: FormBuilderValidators.compose([
+                                    FormBuilderValidators.required(),
+                                    FormBuilderValidators.minLength(6),
+                                  ]),
+                                ),
+                                Gap(20.r),
+                                // confirm password
+                                headerText(title: S.of(context).confirmPassword),
+                                Gap(10.r),
+                                FormBuilderTextField(
+                                  name: 'password_confirmation',
+                                  obscureText: true,
+                                  decoration: AppTheme.inputDecoration.copyWith(
+                                    hintText: "Enter confirm password",
+                                  ),
+                                  validator: FormBuilderValidators.compose([
+                                    FormBuilderValidators.required(),
+                                    (value) {
+                                      final password = _formKey.currentState?.fields['password']?.value;
+                                      if (value != password) {
+                                        return "Passwords do not match";
+                                      }
+                                      return null;
+                                    }
+                                  ]),
+                                ),
                               ],
                             ),
                           ),
@@ -522,32 +557,53 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                             return;
                           }
                           
-                          Map response = await ref
+                          Map validationResponse = await ref
                               .read(validationProvider.notifier)
                               .checkPhoneAndEmail(
                                   email: email, phone: phone);
-                          if (response['status'] == false) {
+                          if (validationResponse['status'] == false) {
                             GlobalFunction.showCustomSnackbar(
-                                message: response['message'], isSuccess: false);
+                                message: validationResponse['message'], isSuccess: false);
                             return;
                           }
-                          ref
-                              .read(sendOTPProvider.notifier)
-                              .sendOTP(
-                                  phone: phone, isForgetPass: false)
-                              .then((value) async {
-                            if (value != null) {
-                              context.nav.pushNamed(
-                                Routes.confirmOTP,
-                                arguments: ConfirmOTPScreenArguments(
-                                  phoneNumber: phone,
-                                  isPasswordRecover: false,
-                                  userData: data,
-                                  otp: value,
-                                ),
-                              );
-                            }
-                          });
+                          // Validate password fields
+                          String password = data["password"]?.toString() ?? '';
+                          String passwordConfirmation = data["password_confirmation"]?.toString() ?? '';
+                          
+                          if (password.isEmpty || passwordConfirmation.isEmpty) {
+                            GlobalFunction.showCustomSnackbar(
+                                message: "Password and confirm password are required", 
+                                isSuccess: false);
+                            return;
+                          }
+                          
+                          if (password != passwordConfirmation) {
+                            GlobalFunction.showCustomSnackbar(
+                                message: "Passwords do not match", 
+                                isSuccess: false);
+                            return;
+                          }
+                          
+                          // Proceed with registration directly
+                          Map registrationResponse = await ref
+                              .read(registrationProvider.notifier)
+                              .registration(data: data);
+                              
+                          if (registrationResponse['status'] == true) {
+                            GlobalFunction.showCustomSnackbar(
+                              message: registrationResponse['message'] ?? 'Registration successful',
+                              isSuccess: true,
+                            );
+                            context.nav.pushNamed(
+                              Routes.review,
+                              arguments: phone,
+                            );
+                          } else {
+                            GlobalFunction.showCustomSnackbar(
+                              message: registrationResponse['message'] ?? 'Registration failed',
+                              isSuccess: false,
+                            );
+                          }
                         } else {
                           if (image == null) {
                             GlobalFunction.showCustomSnackbar(

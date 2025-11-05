@@ -6,10 +6,11 @@ import 'package:razinshop_rider/routers.dart';
 import 'package:razinshop_rider/utils/global_function.dart';
 
 void addApiInterceptors(Dio dio) {
-  dio.options.connectTimeout = const Duration(seconds: 20);
-  dio.options.receiveTimeout = const Duration(seconds: 10);
+  dio.options.connectTimeout = const Duration(seconds: 30);
+  dio.options.receiveTimeout = const Duration(seconds: 30);
+  dio.options.sendTimeout = const Duration(seconds: 30);
   dio.options.headers['Accept'] = 'application/json';
-  dio.options.headers['Content-Type'] = 'application/json';
+  // Note: Don't set Content-Type for multipart forms - Dio handles this automatically
 
   // logger
   dio.interceptors.add(PrettyDioLogger(

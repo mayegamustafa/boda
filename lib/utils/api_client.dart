@@ -29,11 +29,31 @@ class ApiClient {
     dynamic data,
     Map<String, dynamic>? headers,
   }) async {
+    
+    // Create proper headers for multipart data
+    Map<String, dynamic> requestHeaders = Map.from(defaultHeaders);
+    if (headers != null) {
+      requestHeaders.addAll(headers);
+    }
+    
+    // Remove Content-Type for FormData - Dio will set it automatically
+    if (data is FormData) {
+      requestHeaders.remove('Content-Type');
+    }
+    
+    print('POST Request to: $url');
+    print('Headers: $requestHeaders');
+    print('Data type: ${data.runtimeType}');
+    if (data is FormData) {
+      print('FormData fields: ${data.fields.map((f) => '${f.key}: ${f.value}')}');
+      print('FormData files: ${data.files.map((f) => '${f.key}: ${f.value.filename}')}');
+    }
+    
     return _dio.post(
       url,
       data: data,
       options: Options(
-        headers: headers ?? defaultHeaders,
+        headers: requestHeaders,
         followRedirects: false,
         validateStatus: ((status) {
           return status! <= 500;
