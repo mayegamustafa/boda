@@ -298,14 +298,34 @@ class _BottomSectionState extends ConsumerState<BottomSection> {
 class _ShippingInfo extends ConsumerWidget {
   const _ShippingInfo({required this.orderDetailsModel});
   final OrderDetailsModel orderDetailsModel;
-  final double customerLatitude = 23.7686089;
-  final double customerLongitude = 90.3547867;
 
-  void launchDirections() async {
-    final String googleMapsUrl =
-        'https://www.google.com/maps/dir/?api=1&destination=$customerLatitude,$customerLongitude';
-    final String appleMapUrl =
-        'https://maps.apple.com/?daddr=$customerLatitude,$customerLongitude';
+  // Launch directions to SHOP/PICKUP location
+  void launchShopDirections() async {
+    final shop = orderDetailsModel.data?.order?.shop;
+    
+    String googleMapsUrl;
+    String appleMapUrl;
+    
+    // Try to use shop coordinates first (from shop latitude/longitude)
+    if (shop?.latitude != null && shop?.longitude != null && 
+        shop!.latitude!.isNotEmpty && shop.longitude!.isNotEmpty) {
+      final shopLat = double.tryParse(shop.latitude!) ?? 23.7686089;
+      final shopLng = double.tryParse(shop.longitude!) ?? 90.3547867;
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$shopLat,$shopLng';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$shopLat,$shopLng';
+    } else if (shop?.address != null && shop!.address!.isNotEmpty) {
+      // Use shop address for directions
+      final addressText = Uri.encodeComponent(shop.address!);
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$addressText';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$addressText';
+    } else {
+      // Fallback to default coordinates
+      const double shopLatitude = 23.7686089;
+      const double shopLongitude = 90.3547867;
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$shopLatitude,$shopLongitude';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$shopLatitude,$shopLongitude';
+    }
+    
     if (Platform.isIOS) {
       url_launcher.launchUrl(Uri.parse(appleMapUrl));
     } else if (Platform.isAndroid) {
@@ -314,6 +334,40 @@ class _ShippingInfo extends ConsumerWidget {
       throw 'Unsupported platform';
     }
   }
+
+  // Launch directions to CUSTOMER/DROP-OFF location
+  void launchCustomerDirections() async {
+    final user = orderDetailsModel.data?.order?.user;
+    final userAddress = user?.address;
+    
+    String googleMapsUrl;
+    String appleMapUrl;
+    
+    // For now, use address-based search since coordinates aren't in Address model
+    if (userAddress?.addressLine != null && userAddress!.addressLine!.isNotEmpty) {
+      // Use address text for directions
+      final addressText = Uri.encodeComponent('${userAddress.addressLine}, ${userAddress.area ?? ''}, ${userAddress.postCode ?? ''}');
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$addressText';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$addressText';
+    } else {
+      // Fallback to default coordinates if no address available
+      const double customerLatitude = 23.7686089;
+      const double customerLongitude = 90.3547867;
+      googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=$customerLatitude,$customerLongitude';
+      appleMapUrl = 'https://maps.apple.com/?daddr=$customerLatitude,$customerLongitude';
+    }
+    
+    if (Platform.isIOS) {
+      url_launcher.launchUrl(Uri.parse(appleMapUrl));
+    } else if (Platform.isAndroid) {
+      url_launcher.launchUrl(Uri.parse(googleMapsUrl));
+    } else {
+      throw 'Unsupported platform';
+    }
+  }
+
+  // Backward compatibility - this will direct to customer by default
+  void launchDirections() => launchCustomerDirections();
 
   bool shopMapVisibility(status) {
     if (status == 'Confirm' || status == 'Processing') {
@@ -620,8 +674,12 @@ class _ShippingInfo extends ConsumerWidget {
                                             12,
                                           ),
                                           child: GoogleMapView(
-                                            latitude: 23.7686089, // Default coordinates - replace with actual from order data
-                                            longitude: 90.3547867,
+                                            latitude: orderDetailsModel.data?.order?.shop?.latitude != null 
+                                                ? double.tryParse(orderDetailsModel.data!.order!.shop!.latitude!) ?? 23.7686089 
+                                                : 23.7686089,
+                                            longitude: orderDetailsModel.data?.order?.shop?.longitude != null 
+                                                ? double.tryParse(orderDetailsModel.data!.order!.shop!.longitude!) ?? 90.3547867 
+                                                : 90.3547867,
                                             pinIcon: Assets.pngs.storePinIcon.keyName,
                                             showCurrentLocation: true,
                                             trackDelivery: true,
@@ -644,7 +702,7 @@ class _ShippingInfo extends ConsumerWidget {
                                             borderRadius: BorderRadius.circular(
                                               8,
                                             ),
-                                            onTap: launchDirections,
+                                            onTap: launchShopDirections,
                                             child: Container(
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 10.w,
@@ -884,8 +942,8 @@ class _ShippingInfo extends ConsumerWidget {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: GoogleMapView(
-                                      latitude: 23.7686089, // Default coordinates - replace with actual from order data
-                                      longitude: 90.3547867,
+                                      latitude: 23.7686089, // TODO: Add latitude/longitude to Address model and use real coordinates
+                                      longitude: 90.3547867, // For now using default coordinates
                                       pinIcon: Assets.pngs.userPinIcon.keyName,
                                       showCurrentLocation: true,
                                       trackDelivery: true,
@@ -904,7 +962,7 @@ class _ShippingInfo extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(8),
-                                      onTap: launchDirections,
+                                      onTap: launchCustomerDirections,
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
                                           horizontal: 10.w,
