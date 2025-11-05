@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "270046589187",
+    "project_id": "total-1624b",
+    "storage_bucket": "total-1624b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270046589187:android:abc6ea3af57fd375c6b936",
+        "android_client_info": {
+          "package_name": "com.kodepixel.deliveryapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "270046589187-js2n1rcn7ma6p8ocfqqvf5pv9hlq3dk8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5Ul3H36HhXFE-MZnEaQo41LNQTrm4lTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "270046589187-5fmjb2eva4sm9h49t35tc0hd70gl1m8u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "270046589187-k7p06djnj66amtsqdbic2lpcm3hegt6u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.total.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270046589187:android:eb86fdd43612f8a9c6b936",
+        "android_client_info": {
+          "package_name": "com.total.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "270046589187-j00r3jmfcqs8fg3p5v4lpp142aadupil.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.total.app",
+            "certificate_hash": "ceff5afbc7e682bc844ef67581852393c9c9da72"
+          }
+        },
+        {
+          "client_id": "270046589187-js2n1rcn7ma6p8ocfqqvf5pv9hlq3dk8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5Ul3H36HhXFE-MZnEaQo41LNQTrm4lTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "270046589187-5fmjb2eva4sm9h49t35tc0hd70gl1m8u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "270046589187-k7p06djnj66amtsqdbic2lpcm3hegt6u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.total.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270046589187:android:654015b042d140a9c6b936",
+        "android_client_info": {
+          "package_name": "com.totalhealth.bundleId"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "270046589187-js2n1rcn7ma6p8ocfqqvf5pv9hlq3dk8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5Ul3H36HhXFE-MZnEaQo41LNQTrm4lTE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "270046589187-5fmjb2eva4sm9h49t35tc0hd70gl1m8u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "270046589187-k7p06djnj66amtsqdbic2lpcm3hegt6u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.total.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

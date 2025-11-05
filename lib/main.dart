@@ -25,8 +25,12 @@ void main() async {
   // Initialize telemetry service
   await TelemetryService().initialize();
   
-  // Set background message handler for Firebase
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // Set background message handler for Firebase (if available)
+  try {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    print('Firebase not configured - continuing without push notifications');
+  }
   
   // Log app startup
   await TelemetryService().logEvent(
@@ -59,9 +63,13 @@ class MyApp extends StatelessWidget {
           builder: (context, ref, child) {
             final languageNotifier = ref.watch(languageNotifierProvider);
 
-            // Initialize Firebase Messaging Service
+            // Initialize Firebase Messaging Service (if available)
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              FirebaseMessagingService.instance.initializeFirebaseMessaging(ref);
+              try {
+                FirebaseMessagingService.instance.initializeFirebaseMessaging(ref);
+              } catch (e) {
+                print('Firebase messaging not available - using polling notifications only');
+              }
             });
 
             return MaterialApp.router(
