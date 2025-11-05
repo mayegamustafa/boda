@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:razinshop_rider/config/app_color.dart';
 import 'package:razinshop_rider/config/app_constants.dart';
 import 'package:razinshop_rider/config/theme.dart';
+import 'package:razinshop_rider/controllers/misc/providers.dart';
 import 'package:razinshop_rider/routers.dart';
 import 'package:razinshop_rider/services/firebase_messaging_service.dart';
 import 'package:razinshop_rider/services/telemetry_service.dart';

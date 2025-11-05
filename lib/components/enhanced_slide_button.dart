@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -203,11 +204,15 @@ class _EnhancedSlideButtonState extends ConsumerState<EnhancedSlideButton>
     switch (state) {
       case SlideButtonState.idle:
       case SlideButtonState.sliding:
-        return Icon(
-          widget.icon ?? GlobalFunction.slideButtonIcon(widget.text).icon,
-          color: widget.foregroundColor ?? Colors.grey[600],
-          size: 20.sp,
-        );
+        if (widget.icon != null) {
+          return Icon(
+            widget.icon,
+            color: widget.foregroundColor ?? Colors.grey[600],
+            size: 20.sp,
+          );
+        } else {
+          return GlobalFunction.slideButtonIcon(widget.text);
+        }
       case SlideButtonState.loading:
       case SlideButtonState.retrying:
         return SizedBox(
@@ -421,7 +426,7 @@ class _EnhancedSlideButtonState extends ConsumerState<EnhancedSlideButton>
                     opacity: position < (widget.width - 48.w) * 0.5 ? 1.0 : 0.0,
                     child: Text(
                       _getDisplayText(),
-                      style: AppTextStyle.mediumBody.copyWith(
+                      style: AppTextStyle.normalBody.copyWith(
                         color: widget.textColor ?? 
                                (context.isDark ? Colors.white : Colors.black87),
                         fontWeight: FontWeight.w600,

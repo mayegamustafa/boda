@@ -1,4 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Theme provider
+final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+
+// Language provider
+final languageNotifierProvider = StateProvider<LanguageNotifier>((ref) => LanguageNotifier());
+
+class LanguageNotifier {
+  Locale getCurrentLocal = const Locale('en');
+}
 
 final selectedDate = StateProvider<DateTime?>((ref) => null);
 final isSearchActiveProvider = StateProvider<bool>((ref) => false);
