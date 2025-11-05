@@ -117,16 +117,43 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
               name: "phone",
               keyboardType: TextInputType.phone,
               decoration: AppTheme.inputDecoration.copyWith(
-                hintText: S.of(context).enterPhoneNumber,
+                hintText: "Enter phone number (e.g., +256712345678 or 0712345678)",
               ),
               validator: FormBuilderValidators.compose([
                 FormBuilderValidators.required(
                   errorText: S.of(context).invalidPhnNmbr,
                 ),
-                FormBuilderValidators.minLength(
-                  11,
-                  errorText: S.of(context).invalidPhnNmbr,
-                ),
+                (value) {
+                  if (value == null || value.isEmpty) {
+                    return S.of(context).invalidPhnNmbr;
+                  }
+                  
+                  // Remove spaces and other formatting
+                  String cleanedPhone = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+                  
+                  // Check if it starts with + (international format)
+                  if (cleanedPhone.startsWith('+')) {
+                    // For international format: +[country code][number]
+                    if (cleanedPhone.length < 10 || cleanedPhone.length > 16) {
+                      return 'Phone number with country code should be 10-16 digits';
+                    }
+                    // Check if all characters after + are digits
+                    if (!RegExp(r'^\+\d+$').hasMatch(cleanedPhone)) {
+                      return 'Invalid phone number format';
+                    }
+                  } else {
+                    // For local format (without country code)
+                    if (cleanedPhone.length < 9 || cleanedPhone.length > 15) {
+                      return 'Phone number should be 9-15 digits or include country code';
+                    }
+                    // Check if all characters are digits
+                    if (!RegExp(r'^\d+$').hasMatch(cleanedPhone)) {
+                      return 'Phone number should contain only digits';
+                    }
+                  }
+                  
+                  return null; // Valid
+                },
               ]),
             ),
             Gap(20.h),

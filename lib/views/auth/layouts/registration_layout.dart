@@ -196,7 +196,7 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                                   name: 'phone',
                                   keyboardType: TextInputType.phone,
                                   decoration: AppTheme.inputDecoration.copyWith(
-                                    hintText: S.of(context).enterPhoneNumber,
+                                    hintText: "Enter phone number (e.g., +256712345678 or 0712345678)",
                                   ),
                                   validator:
                                       FormBuilderValidators.compose(validators),
