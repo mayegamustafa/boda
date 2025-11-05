@@ -41,9 +41,7 @@ class HeaderSection extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                    child: context.isDark
-                        ? Assets.pngs.riderAppDark.image(height: 40.h)
-                        : Assets.pngs.riderApp.image(height: 40.h)),
+                    child: Assets.pngs.delivery.image(height: 40.h)),
                 Stack(
                   children: [
                     Material(
