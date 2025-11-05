@@ -510,10 +510,22 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                             "profile_photo":
                                 await MultipartFile.fromFile(image!.path)
                           };
+                          
+                          // Ensure email and phone are strings
+                          String email = data["email"]?.toString() ?? '';
+                          String phone = data["phone"]?.toString() ?? '';
+                          
+                          if (email.isEmpty || phone.isEmpty) {
+                            GlobalFunction.showCustomSnackbar(
+                                message: "Email and phone are required", 
+                                isSuccess: false);
+                            return;
+                          }
+                          
                           Map response = await ref
                               .read(validationProvider.notifier)
                               .checkPhoneAndEmail(
-                                  email: data["email"], phone: data["phone"]);
+                                  email: email, phone: phone);
                           if (response['status'] == false) {
                             GlobalFunction.showCustomSnackbar(
                                 message: response['message'], isSuccess: false);
@@ -522,13 +534,13 @@ class _RegistrationLayoutState extends ConsumerState<RegistrationLayout> {
                           ref
                               .read(sendOTPProvider.notifier)
                               .sendOTP(
-                                  phone: data["phone"], isForgetPass: false)
+                                  phone: phone, isForgetPass: false)
                               .then((value) async {
                             if (value != null) {
                               context.nav.pushNamed(
                                 Routes.confirmOTP,
                                 arguments: ConfirmOTPScreenArguments(
-                                  phoneNumber: data["phone"],
+                                  phoneNumber: phone,
                                   isPasswordRecover: false,
                                   userData: data,
                                   otp: value,
