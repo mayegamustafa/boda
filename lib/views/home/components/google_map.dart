@@ -333,11 +333,11 @@ class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
                                   } else {
                                     // Show error message
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Location permission denied. You can enable it in Settings.'),
+                                      SnackBar(
+                                        content: const Text('Location permission denied. You can enable it in Settings.'),
                                         action: SnackBarAction(
                                           label: 'Settings',
-                                          onPressed: openAppSettings,
+                                          onPressed: () => openAppSettings(),
                                         ),
                                       ),
                                     );
