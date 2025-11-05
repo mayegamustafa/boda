@@ -15,9 +15,6 @@ class $AssetsPngsGen {
   /// File path: assets/pngs/Avatar.png
   AssetGenImage get avatar => const AssetGenImage('assets/pngs/Avatar.png');
 
-  /// File path: assets/pngs/delivery.png
-  AssetGenImage get delivery => const AssetGenImage('assets/pngs/delivery.png');
-
   /// File path: assets/pngs/Rider App Dark.png
   AssetGenImage get riderAppDark =>
       const AssetGenImage('assets/pngs/Rider App Dark.png');
@@ -28,6 +25,9 @@ class $AssetsPngsGen {
 
   /// File path: assets/pngs/arrow-2.png
   AssetGenImage get arrow2 => const AssetGenImage('assets/pngs/arrow-2.png');
+
+  /// File path: assets/pngs/delivery.png
+  AssetGenImage get delivery => const AssetGenImage('assets/pngs/delivery.png');
 
   /// File path: assets/pngs/otpSMS.png
   AssetGenImage get otpSMS => const AssetGenImage('assets/pngs/otpSMS.png');
@@ -47,10 +47,10 @@ class $AssetsPngsGen {
   /// List of all assets
   List<AssetGenImage> get values => [
         avatar,
-        delivery,
         riderAppDark,
         riderApp,
         arrow2,
+        delivery,
         otpSMS,
         profileReviewScreen,
         storePinIcon,

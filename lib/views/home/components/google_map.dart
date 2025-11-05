@@ -3,39 +3,62 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:razinshop_rider/utils/extensions.dart';
+import 'package:razinshop_rider/controllers/location_controller/location_controller.dart';
 
-class GoogleMapView extends StatefulWidget {
-  final double latitude;
-  final double longitude;
+
+class GoogleMapView extends ConsumerStatefulWidget {
+  final double? latitude;
+  final double? longitude;
   final String pinIcon;
+  final bool showCurrentLocation;
+  final bool trackDelivery;
+  final String? orderId;
+  
   const GoogleMapView({
     Key? key,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     required this.pinIcon,
+    this.showCurrentLocation = false,
+    this.trackDelivery = false,
+    this.orderId,
   }) : super(key: key);
 
   @override
-  GoogleMapViewState createState() => GoogleMapViewState();
+  ConsumerState<GoogleMapView> createState() => _GoogleMapViewState();
 }
 
-class GoogleMapViewState extends State<GoogleMapView> {
+class _GoogleMapViewState extends ConsumerState<GoogleMapView> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
   late CameraPosition _kGooglePlex;
-  BitmapDescriptor? _bitmapDescriptor;
+  BitmapDescriptor? _destinationMarker;
+  BitmapDescriptor? _riderMarker;
+  BitmapDescriptor? _pickupMarker;
+  Set<Marker> markers = {};
+  Set<Polyline> polylines = {};
 
   @override
   void initState() {
     super.initState();
+    _initializeMap();
+    _loadMarkers();
+  }
+
+  void _initializeMap() {
+    // Set default camera position
+    double lat = widget.latitude ?? 23.7686089;
+    double lng = widget.longitude ?? 90.3547867;
+    
     _kGooglePlex = CameraPosition(
-      target: LatLng(widget.latitude, widget.longitude),
+      target: LatLng(lat, lng),
       zoom: 16.4746,
     );
-    getMarker();
   }
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -48,13 +71,142 @@ class GoogleMapViewState extends State<GoogleMapView> {
         .asUint8List();
   }
 
-  Future<void> getMarker() async {
-    final Uint8List markerIcon = await getBytesFromAsset(widget.pinIcon, 80);
-
-    _bitmapDescriptor = BitmapDescriptor.fromBytes(markerIcon);
+  Future<void> _loadMarkers() async {
+    try {
+      // Load destination marker
+      final Uint8List destinationIcon = await getBytesFromAsset(widget.pinIcon, 80);
+      _destinationMarker = BitmapDescriptor.fromBytes(destinationIcon);
+    } catch (e) {
+      print('Could not load destination marker: $e');
+      _destinationMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+    }
+    
+    try {
+      // Try to load rider marker, fallback to default blue
+      _riderMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+    } catch (e) {
+      print('Could not load rider marker: $e');
+      _riderMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
+    }
+    
+    try {
+      // Try to load pickup marker, fallback to default green
+      _pickupMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+    } catch (e) {
+      print('Could not load pickup marker: $e');
+      _pickupMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+    }
 
     if (mounted) {
       setState(() {});
+      _updateMarkers();
+    }
+  }
+
+  void _updateMarkers() {
+    final currentLocation = ref.watch(currentLocationProvider);
+    final deliveryTracking = ref.watch(deliveryTrackingProvider);
+    
+    Set<Marker> newMarkers = {};
+    
+    // Add destination marker if coordinates provided
+    if (widget.latitude != null && widget.longitude != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('destination'),
+          position: LatLng(widget.latitude!, widget.longitude!),
+          icon: _destinationMarker ?? BitmapDescriptor.defaultMarker,
+          anchor: const Offset(0.5, 1),
+          infoWindow: const InfoWindow(title: 'Destination'),
+        ),
+      );
+    }
+    
+    // Add current location marker if enabled
+    if (widget.showCurrentLocation && currentLocation != null && _riderMarker != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('currentLocation'),
+          position: LatLng(currentLocation.latitude, currentLocation.longitude),
+          icon: _riderMarker!,
+          anchor: const Offset(0.5, 0.5),
+          infoWindow: const InfoWindow(title: 'Your Location'),
+        ),
+      );
+    }
+    
+    // Add delivery tracking markers if enabled
+    if (widget.trackDelivery && deliveryTracking.isTracking) {
+      // Pickup marker
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: LatLng(deliveryTracking.pickupLatitude, deliveryTracking.pickupLongitude),
+          icon: _pickupMarker ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          anchor: const Offset(0.5, 1),
+          infoWindow: const InfoWindow(title: 'Pickup Location'),
+        ),
+      );
+      
+      // Delivery marker
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('delivery'),
+          position: LatLng(deliveryTracking.deliveryLatitude, deliveryTracking.deliveryLongitude),
+          icon: _destinationMarker ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          anchor: const Offset(0.5, 1),
+          infoWindow: const InfoWindow(title: 'Delivery Location'),
+        ),
+      );
+    }
+    
+    setState(() {
+      markers = newMarkers;
+    });
+    
+    // Update camera to show all markers
+    _fitMarkersToCamera();
+  }
+
+  void _fitMarkersToCamera() async {
+    if (markers.isEmpty) return;
+    
+    final controller = await _controller.future;
+    
+    if (markers.length == 1) {
+      // If only one marker, center on it
+      final marker = markers.first;
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: marker.position,
+            zoom: 16.0,
+          ),
+        ),
+      );
+    } else {
+      // If multiple markers, fit them all in view
+      double minLat = markers.first.position.latitude;
+      double maxLat = markers.first.position.latitude;
+      double minLng = markers.first.position.longitude;
+      double maxLng = markers.first.position.longitude;
+      
+      for (final marker in markers) {
+        minLat = marker.position.latitude < minLat ? marker.position.latitude : minLat;
+        maxLat = marker.position.latitude > maxLat ? marker.position.latitude : maxLat;
+        minLng = marker.position.longitude < minLng ? marker.position.longitude : minLng;
+        maxLng = marker.position.longitude > maxLng ? marker.position.longitude : maxLng;
+      }
+      
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat, minLng),
+            northeast: LatLng(maxLat, maxLng),
+          ),
+          100.0, // padding
+        ),
+      );
     }
   }
 
@@ -66,27 +218,141 @@ class GoogleMapViewState extends State<GoogleMapView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_bitmapDescriptor == null) {
+    // Listen to location and delivery tracking changes
+    ref.listen<Position?>(currentLocationProvider, (previous, next) {
+      if (next != null) {
+        _updateMarkers();
+      }
+    });
+    
+    ref.listen<DeliveryTrackingState>(deliveryTrackingProvider, (previous, next) {
+      _updateMarkers();
+    });
+
+    if (_destinationMarker == null) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    return GoogleMap(
-      zoomControlsEnabled: false,
-      myLocationButtonEnabled: false,
-      mapType: context.isDark ? MapType.satellite : MapType.terrain,
-      initialCameraPosition: _kGooglePlex,
-      onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
-      },
-      markers: {
-        Marker(
-            markerId: const MarkerId('customerMarker'),
-            position: LatLng(widget.latitude, widget.longitude),
-            icon: _bitmapDescriptor!,
-            anchor: const Offset(0.5, 1)),
-      },
+    return Stack(
+      children: [
+        GoogleMap(
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+          myLocationEnabled: widget.showCurrentLocation,
+          mapType: context.isDark ? MapType.satellite : MapType.terrain,
+          initialCameraPosition: _kGooglePlex,
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+            _updateMarkers(); // Update markers when map is ready
+          },
+          markers: markers,
+          polylines: polylines,
+        ),
+        
+        // Location permission request overlay
+        Consumer(
+          builder: (context, ref, child) {
+            final hasPermission = ref.watch(locationPermissionProvider);
+            
+            if (!hasPermission && widget.showCurrentLocation) {
+              return Positioned(
+                top: 20,
+                left: 20,
+                right: 20,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Location Permission Required',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'To show your current location on the map, please grant location permission.',
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final granted = await ref
+                                .read(locationPermissionProvider.notifier)
+                                .requestPermission();
+                            if (granted) {
+                              // Trigger location update
+                              ref.read(currentLocationProvider.notifier).updateLocation();
+                            }
+                          },
+                          child: const Text('Grant Permission'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+            
+            return const SizedBox.shrink();
+          },
+        ),
+        
+        // Delivery status overlay
+        if (widget.trackDelivery)
+          Consumer(
+            builder: (context, ref, child) {
+              final deliveryState = ref.watch(deliveryTrackingProvider);
+              
+              if (!deliveryState.isTracking) return const SizedBox.shrink();
+              
+              return Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order: ${deliveryState.orderId}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Status: ${_getStatusText(deliveryState.status)}'),
+                        if (deliveryState.distanceToPickup > 0)
+                          Text('Distance to Pickup: ${deliveryState.distanceToPickup.toStringAsFixed(0)}m'),
+                        if (deliveryState.distanceToDelivery > 0)
+                          Text('Distance to Delivery: ${deliveryState.distanceToDelivery.toStringAsFixed(0)}m'),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
     );
+  }
+  
+  String _getStatusText(DeliveryStatus status) {
+    switch (status) {
+      case DeliveryStatus.idle:
+        return 'Ready';
+      case DeliveryStatus.goingToPickup:
+        return 'Going to Pickup';
+      case DeliveryStatus.atPickupLocation:
+        return 'At Pickup Location';
+      case DeliveryStatus.goingToDelivery:
+        return 'Going to Delivery';
+      case DeliveryStatus.atDeliveryLocation:
+        return 'At Delivery Location';
+      case DeliveryStatus.delivered:
+        return 'Delivered';
+    }
   }
 }

@@ -172,8 +172,6 @@ class OrderDetailsProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 mixin OrderDetailsRef
     on AutoDisposeAsyncNotifierProviderRef<OrderDetailsModel> {
   /// The parameter `arg` of this provider.
@@ -205,7 +203,7 @@ final orderStatusUpdateProvider =
 );
 
 typedef _$OrderStatusUpdate = AutoDisposeNotifier<bool>;
-String _$orderHistoryHash() => r'b01cf7206805b9eee56a13aa46a060a4bc7727d3';
+String _$orderHistoryHash() => r'bd648aad4d6a614d8d2258bd70f06ae07a0913f0';
 
 /// See also [OrderHistory].
 @ProviderFor(OrderHistory)
@@ -221,4 +219,4 @@ final orderHistoryProvider =
 
 typedef _$OrderHistory = AutoDisposeAsyncNotifier<OrderHistoryState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

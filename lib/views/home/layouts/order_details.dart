@@ -22,13 +22,12 @@ import 'package:razinshop_rider/utils/extensions.dart';
 import 'package:razinshop_rider/utils/global_function.dart';
 import 'package:razinshop_rider/views/home/components/cash_collect_dialog.dart';
 import 'package:razinshop_rider/views/home/components/google_map.dart';
+
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class OrderDetailsView extends ConsumerWidget {
   const OrderDetailsView({super.key, required this.orderID});
   final int orderID;
-  final double customerLatitude = 23.7686089;
-  final double customerLongitude = 90.3547867;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -621,13 +620,12 @@ class _ShippingInfo extends ConsumerWidget {
                                             12,
                                           ),
                                           child: GoogleMapView(
-                                            latitude: customerLatitude,
-                                            longitude: customerLongitude,
-                                            pinIcon:
-                                                Assets
-                                                    .pngs
-                                                    .storePinIcon
-                                                    .keyName,
+                                            latitude: 23.7686089, // Default coordinates - replace with actual from order data
+                                            longitude: 90.3547867,
+                                            pinIcon: Assets.pngs.storePinIcon.keyName,
+                                            showCurrentLocation: true,
+                                            trackDelivery: true,
+                                            orderId: orderDetailsModel.data?.order?.id?.toString() ?? '',
                                           ),
                                         ),
                                       ),
@@ -886,9 +884,12 @@ class _ShippingInfo extends ConsumerWidget {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: GoogleMapView(
-                                      latitude: customerLatitude,
-                                      longitude: customerLongitude,
+                                      latitude: 23.7686089, // Default coordinates - replace with actual from order data
+                                      longitude: 90.3547867,
                                       pinIcon: Assets.pngs.userPinIcon.keyName,
+                                      showCurrentLocation: true,
+                                      trackDelivery: true,
+                                      orderId: orderDetailsModel.data?.order?.id?.toString() ?? '',
                                     ),
                                   ),
                                 ),

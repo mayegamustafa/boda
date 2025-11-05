@@ -6,7 +6,7 @@ part of 'auth_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$loginHash() => r'c3a2e69cdc14b35bed8b90a8bafa183ed1a1a24d';
+String _$loginHash() => r'b6e742be71fa33ab7295939ce02430175565620f';
 
 /// See also [Login].
 @ProviderFor(Login)
@@ -20,7 +20,7 @@ final loginProvider = AutoDisposeNotifierProvider<Login, bool>.internal(
 );
 
 typedef _$Login = AutoDisposeNotifier<bool>;
-String _$sendOTPHash() => r'2625bd1459f6b9ba594a12297fda0d4d51966533';
+String _$sendOTPHash() => r'f940b83fa374956d725d64a30644c5513cb8e1b0';
 
 /// See also [SendOTP].
 @ProviderFor(SendOTP)
@@ -34,7 +34,7 @@ final sendOTPProvider = AutoDisposeNotifierProvider<SendOTP, bool>.internal(
 );
 
 typedef _$SendOTP = AutoDisposeNotifier<bool>;
-String _$verifyOTPHash() => r'6418bad986aa5fa479cbb0432dedd440ac1f2b9e';
+String _$verifyOTPHash() => r'a21f436c7b39d9a64eb3214b755eac79f3c62651';
 
 /// See also [VerifyOTP].
 @ProviderFor(VerifyOTP)
@@ -48,7 +48,7 @@ final verifyOTPProvider = AutoDisposeNotifierProvider<VerifyOTP, bool>.internal(
 );
 
 typedef _$VerifyOTP = AutoDisposeNotifier<bool>;
-String _$registrationHash() => r'2c320fa250df456c07a282a1c719c936b042f82e';
+String _$registrationHash() => r'61d4d5c7a295a28a6b075c162b650100b0b53759';
 
 /// See also [Registration].
 @ProviderFor(Registration)
@@ -212,8 +212,6 @@ class CheckUserStatusProvider
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 mixin CheckUserStatusRef on AutoDisposeNotifierProviderRef<void> {
   /// The parameter `arg` of this provider.
   String get arg;
@@ -322,4 +320,4 @@ final updateProfileProvider =
 
 typedef _$UpdateProfile = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
