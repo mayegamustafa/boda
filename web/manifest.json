@@ -1,11 +1,11 @@
 {
-    "name": "razinshop_rider",
-    "short_name": "razinshop_rider",
+    "name": "Total Ride",
+    "short_name": "Total Ride",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Total Health Herbalist Ride App.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

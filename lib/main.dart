@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
             final selectedLocal = appSetting.get(AppConstants.appLocal);
             return MaterialApp(
               debugShowCheckedModeBanner: false,
-              title: 'Ready eCommerce Rider',
+              title: 'Total Ride',
               theme:
                   appSetting.get(AppConstants.isDarkTheme, defaultValue: false)
                       ? AppTheme.darkTheme
