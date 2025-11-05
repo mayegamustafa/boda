@@ -33,7 +33,22 @@ void addApiInterceptors(Dio dio) {
         handler.next(options);
       },
       onResponse: (response, handler) {
-        final message = response.data['message'];
+        var message = response.data['message'];
+
+        // Sanitize server messages: avoid exposing stack traces or internal
+        // server errors to end users. If the message looks like a stack trace
+        // or contains internal PHP class paths, replace with a generic text.
+        if (message is String) {
+          final lower = message.toLowerCase();
+          final looksLikeStack = lower.contains('app\\') ||
+              lower.contains('repositories') ||
+              lower.contains('argument#') ||
+              lower.contains('stacktrace') ||
+              message.length > 300;
+          if (looksLikeStack) {
+            message = 'Server error occurred. Please contact support.';
+          }
+        }
 
         switch (response.statusCode) {
           case 401:
@@ -42,7 +57,7 @@ void addApiInterceptors(Dio dio) {
             GlobalFunction.navigatorKey.currentState
                 ?.pushNamedAndRemoveUntil(Routes.login, (route) => false);
             GlobalFunction.showCustomSnackbar(
-              message: message,
+              message: message ?? 'Unauthorized',
               isSuccess: false,
             );
             break;
@@ -54,7 +69,7 @@ void addApiInterceptors(Dio dio) {
           case 422:
           case 500:
             GlobalFunction.showCustomSnackbar(
-              message: message,
+              message: message ?? 'Server error occurred',
               isSuccess: false,
             );
             break;
@@ -91,10 +106,26 @@ void addApiInterceptors(Dio dio) {
             if (error.response?.data != null) {
               try {
                 final responseData = error.response!.data;
+                String? candidate;
                 if (responseData is Map && responseData.containsKey('message')) {
-                  errorMessage = responseData['message'].toString();
+                  candidate = responseData['message'].toString();
                 } else if (responseData is String) {
-                  errorMessage = responseData;
+                  candidate = responseData;
+                }
+
+                // Sanitize server-provided messages to avoid displaying stack traces
+                if (candidate != null) {
+                  final lower = candidate.toLowerCase();
+                  final looksLikeStack = lower.contains('app\\') ||
+                      lower.contains('repositories') ||
+                      lower.contains('argument#') ||
+                      lower.contains('stacktrace') ||
+                      candidate.length > 300;
+                  if (looksLikeStack) {
+                    errorMessage = 'Server error occurred. Please contact support.';
+                  } else {
+                    errorMessage = candidate;
+                  }
                 } else {
                   errorMessage = 'Server error occurred';
                 }
