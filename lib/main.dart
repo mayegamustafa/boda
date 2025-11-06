@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
             // Initialize Firebase Messaging Service (if available)
             WidgetsBinding.instance.addPostFrameCallback((_) {
               try {
-                FirebaseMessagingService(ref).initialize();
+                ref.read(firebaseMessagingServiceProvider).initialize();
               } catch (e) {
                 print('Firebase messaging not available - using polling notifications only');
               }
